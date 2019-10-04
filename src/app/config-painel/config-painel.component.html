@@ -1,0 +1,141 @@
+<h1 class="rootTag container">Scheduling Mantenaince Example</h1>
+
+<button class="btn btn-primary" (click)="optimize()">Encontrar máximo/mínimo</button>
+
+<br><br>
+<p-accordion [multiple]="true">
+	<p-accordionTab header="Configuração">
+		<div class="rootTag">
+			<div class="container slidersContent" >
+				<br>
+				<h6>Probabilidade de Cruzamento: {{probCruzamento|number:'1.2-5'}}</h6>
+				<p-slider class="slider" [(ngModel)]="probCruzamento" 
+				[step]="0.01" [min]="0" [max]="1" 
+				[animate]="true" ></p-slider>
+				<br>
+				<h6>Probabilidade de Mutação: {{probMutacao|number:'1.2-5'}}</h6>
+				<p-slider class="slider" [(ngModel)]="probMutacao" 
+				[step]="0.01" [min]="0" [max]="1"
+				[animate]="true" ></p-slider>
+				<br>
+				<h6>Tamanho da população: {{populationSize}}</h6>
+				<p-slider class="slider" [(ngModel)]="populationSize" 
+				[step]="2" [min]="2" [max]="100"
+				[animate]="true" ></p-slider>
+				<br>
+				<h6>Número de gerações: {{maxNumOfGenerations}}</h6>
+				<p-slider class="slider" [(ngModel)]="maxNumOfGenerations" 
+				[step]="1" [min]="0" [max]="200" 
+				[animate]="true" ></p-slider>
+				<br>
+				<h6>Número de indivíduos na lista dos melhores: {{numOfBestToKeep}}</h6>
+				<p-slider class="slider" [(ngModel)]="numOfBestToKeep" 
+				[step]="1" [min]="0" [max]="200" 
+				[animate]="true" ></p-slider>
+				
+				<br><br>
+				<h5>Modo de seleção de casais</h5>
+				
+				<p-radioButton label="Roleta" name="groupname" value="Roleta" [(ngModel)]="couplesSelectionMode">Roleta</p-radioButton>
+				<br><br>
+				<p-radioButton label="Torneio" name="groupname" value="Torneio" [(ngModel)]="couplesSelectionMode">Torneio</p-radioButton>
+				<br>
+				<br>
+				<h6>Indivíduos por torneio: {{numOfIndividualsInTourney}}</h6>
+				<p-slider class="slider" [(ngModel)]="numOfIndividualsInTourney" 
+				[step]="1" [min]="1" [max]="populationSize" 
+				[animate]="true" ></p-slider>
+				<br>
+				<br>
+				<br>
+				<p-checkbox label="Habilitar elistismo" name="groupname" value="elitism" [(ngModel)]="checkBoxSelectedItens"></p-checkbox>
+				<br>
+				<br>
+				<h6>Indivíduos preservados por elitismo: {{numOfElitismInd}}</h6>
+				<p-slider class="slider" [(ngModel)]="numOfElitismInd" 
+				[step]="2" [min]="0" [max]="populationSize" 
+				[animate]="true" ></p-slider>
+
+				<br><br><br>            
+			</div>      
+		</div>
+	</p-accordionTab>
+	<p-accordionTab header="Dados" [selected]="true">
+		<h2 class="rootTag container">Dados </h2>
+		<p-table [value]="schedulingConfig.machines" class="table table-dark">
+				<ng-template pTemplate="header">
+					<tr>
+						<!--<th *ngFor="let machine of schedulingConfig.machines">Unidade {{machine.unitID}}</th>-->
+						<th>Unidade</th>
+						<th>Capacidade (MW)</th>
+						<th>Número de intervalos interruptos de manutenção</th>
+					</tr>
+				</ng-template>
+				<ng-template pTemplate="body" let-unit>
+					<tr>
+						<td>{{unit.unitID}}</td>
+						<td>{{unit.capacity}}</td>
+						<td>{{unit.numOfMaintenances}}</td>
+					</tr>
+				</ng-template>
+			</p-table>
+			<br><br>
+	</p-accordionTab>
+	<p-accordionTab header="Curva de desempenho" [selected]="false">
+		<h2 class="rootTag container">Curva de desempenho</h2>
+		<div class="chartDiv">
+			<p-chart [style.display]="'block'" type="line" [data]="performanceData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>
+			<!--<p-chart [style.display]="showGraph2" type="line" [data]="graphData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>-->
+		</div>
+		<h2 class="rootTag container">Fitness do melhor indivíduo</h2>
+		<div class="chartDiv">
+			<p-chart [style.display]="'block'" type="line" [data]="bestIndividualData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>
+			<!--<p-chart [style.display]="showGraph2" type="line" [data]="graphData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>-->
+		</div>
+	</p-accordionTab>
+	<p-accordionTab header="Tabelas">
+			<p-table [value]="bestInd" class="table table-dark">
+					<ng-template pTemplate="header">
+						<tr>
+							<!--<th *ngFor="let machine of schedulingConfig.machines">Unidade {{machine.unitID}}</th>-->
+							<th>Manutenções</th>
+							<th>Potências líquidas</th>
+							<th>fitness</th>
+							<th>Generation</th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-indiv>
+						<tr>
+							<td><span *ngFor="let machine of indiv.data.machines"> {{machine.maintenanceStart}},  </span></td>
+							<td><span *ngFor="let potLiq of indiv.data.pl"> {{potLiq}},  </span></td>
+							<td>{{indiv.fitness}}</td>
+							<td>{{indiv.generation}}</td>
+						</tr>
+					</ng-template>
+				</p-table>
+				<br><br>
+				<p-table [value]="generations">
+					<ng-template pTemplate="header">
+						<tr>
+							<th>Generation</th>
+							<th>Best</th>
+							<th>Average</th>
+						</tr>
+					</ng-template>
+					<ng-template pTemplate="body" let-genArray>
+						<tr>
+							<td>{{generations.indexOf(genArray)}}</td>
+							<td>{{genArray[genArray.length-1].fitness}}</td>
+							<td>{{calcFitnessAverage(genArray)}}</td>
+						</tr>
+					</ng-template>
+			</p-table>  
+	</p-accordionTab>
+</p-accordion>
+
+
+
+
+
+
+

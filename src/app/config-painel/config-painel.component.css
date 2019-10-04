@@ -1,0 +1,13 @@
+.rootTag{
+    width: 30%;
+    /*float: left;*/
+}
+
+.slidersContent{
+    width: 80%;
+}
+
+.charDiv{
+    width: 70%;
+    float: right;
+}
