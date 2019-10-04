@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
+//ng2-charts
+import { ChartsModule } from 'ng2-charts';
+
 import { AppComponent } from './app.component';
 import { ConfigPainelComponent } from './config-painel/config-painel.component';
 import { SliderModule } from 'primeng/slider';
@@ -12,12 +15,15 @@ import {TableModule} from 'primeng/table';
 import {AccordionModule} from 'primeng/accordion';
 import {RadioButtonModule} from 'primeng/radiobutton';
 import {CheckboxModule} from 'primeng/checkbox';
+import { ScatterComponent } from './scatter/scatter.component';
+
 
 
 @NgModule({
   declarations: [
     AppComponent,
-    ConfigPainelComponent
+    ConfigPainelComponent,
+    ScatterComponent
   ],
   imports: [
     BrowserModule,
@@ -28,7 +34,8 @@ import {CheckboxModule} from 'primeng/checkbox';
     TableModule,
     AccordionModule,
     RadioButtonModule,
-    CheckboxModule
+    CheckboxModule,
+    ChartsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

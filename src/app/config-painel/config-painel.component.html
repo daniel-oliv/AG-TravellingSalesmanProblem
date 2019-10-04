@@ -60,8 +60,11 @@
 			</div>      
 		</div>
 	</p-accordionTab>
-	<p-accordionTab header="Dados" [selected]="true">
-		<h2 class="rootTag container">Dados </h2>
+	<p-accordionTab header="graphSection" [selected]="true">
+		<h2 class="rootTag container">Inserção de pontos</h2>
+
+		<app-scatter></app-scatter>
+		
 		<p-table [value]="schedulingConfig.machines" class="table table-dark">
 				<ng-template pTemplate="header">
 					<tr>
@@ -85,12 +88,11 @@
 		<h2 class="rootTag container">Curva de desempenho</h2>
 		<div class="chartDiv">
 			<p-chart [style.display]="'block'" type="line" [data]="performanceData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>
-			<!--<p-chart [style.display]="showGraph2" type="line" [data]="graphData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>-->
+			
 		</div>
 		<h2 class="rootTag container">Fitness do melhor indivíduo</h2>
 		<div class="chartDiv">
 			<p-chart [style.display]="'block'" type="line" [data]="bestIndividualData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>
-			<!--<p-chart [style.display]="showGraph2" type="line" [data]="graphData" [responsive]="isGraphResponsive" width="95vw" height="80vh"></p-chart>-->
 		</div>
 	</p-accordionTab>
 	<p-accordionTab header="Tabelas">
