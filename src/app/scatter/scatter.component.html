@@ -5,7 +5,8 @@
           [datasets]="scatterChartData"
           [options]="scatterChartOptions"
           [labels]="scatterChartLabels"
-          [chartType]="scatterChartType">
+          [chartType]="scatterChartType"
+          (chartClick)="chartClicked($event)">
         </canvas>
       </div>
     </div>

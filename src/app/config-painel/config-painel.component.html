@@ -60,10 +60,11 @@
 			</div>      
 		</div>
 	</p-accordionTab>
-	<p-accordionTab header="graphSection" [selected]="true">
+	<p-accordionTab header="Inserção de pontos" [selected]="true">
 		<h2 class="rootTag container">Inserção de pontos</h2>
 
-		<app-scatter></app-scatter>
+		<!--<app-scatter></app-scatter>-->
+		<app-map-agm></app-map-agm>
 		
 		<p-table [value]="schedulingConfig.machines" class="table table-dark">
 				<ng-template pTemplate="header">
