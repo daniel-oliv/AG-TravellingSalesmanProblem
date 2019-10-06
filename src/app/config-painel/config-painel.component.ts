@@ -39,8 +39,7 @@ export class ConfigPainelComponent implements OnInit {
   performanceData: any;
   bestIndividualData: any;
 
-  schedulingConfig: schedulingConfig;
-  numOfIntervals: number;
+  //numOfIntervals: number;
   numOfVariables: number;
   destinations: Variable[];
 
@@ -66,8 +65,6 @@ export class ConfigPainelComponent implements OnInit {
     this.checkBoxSelectedItens = ["elitism"];
     this.numOfIndividualsInTourney = 4;
     this.numOfElitismInd = 2;
-    this.numOfIntervals = 4;
-    this.initSchedulingConfig();
 
   }
 
@@ -87,43 +84,6 @@ export class ConfigPainelComponent implements OnInit {
     //console.log("destinations ", destinations);
     //console.log("this ", this.destinations);
     this.numOfVariables = destinations.length;
-  }
-
-  initSchedulingConfig()
-  {
-    let potDemandas = [80, 90, 65, 70];
-    let capacities = [20, 15, 35, 40, 15, 15, 10];
-    let numOfMaintenanceIntervals = [2, 2, 1, 1, 1, 1, 1];
-
-    this.schedulingConfig = 
-    {
-      pt: this.sumArray(capacities),
-      pd: potDemandas,
-      machines: []
-    }
-
-    for (let index = 0; index < capacities.length; index++) 
-    {
-      let machine: MachineConfig = 
-      {
-        unitID: (index+1).toString(),
-        capacity: capacities[index],
-        numOfMaintenances: numOfMaintenanceIntervals[index],
-
-      }
-      this.schedulingConfig.machines.push(machine)
-    }
-    /*
-    for (let index = 0; index < potDemandas.length; index++) 
-    {
-      let interval: Interval = 
-      {
-        pd: potDemandas[index]
-      }
-      this.schedulingConfig.intervals.push(interval)
-    }
-    */
-    console.log("initSchedulingConfig", this.schedulingConfig);
   }
 
   numOfNewIndividual() 
@@ -930,52 +890,6 @@ interface Variable{
   ///match with mark label
   id: string;
   data?: marker;
-}
-
-interface schedulingData{
-  //pt: number;
-  /// potências perdidas em cada intervalo
-  pp: number[];
-
-  /// potências líquidas em cada intervalo
-  pl: number[];
-
-  machines: Machine[];
-}
-
-interface schedulingConfig{
-  pt: number;
-  pd: number[];
-  machines: MachineConfig[];
-}
-/*
-interface Interval{
-  /// potência perdida no intervalo (soma de todas as máquinas em manutenção)
-  pp?: number;
-  /// potência demanda no intervalo
-  pd: number;
-}
-*/
-interface MachineConfig{
-  /// identificador de 1 a 7
-  unitID: string;
-
-  /// potência da unidade
-  capacity: number;
-
-  /// número de intervalos consecutivos de manutenção - duração da manutenção
-  numOfMaintenances: number;
-
-  /// the number between 0 and 3, representing one of the four year intervals
-  maintenanceStart?: number;
-
-  binary?: string;
-}
-
-interface Machine{
-  maintenanceStart?: number;
-
-  binary?: string;
 }
  
 declare interface marker {
