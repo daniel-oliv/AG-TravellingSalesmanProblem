@@ -83,6 +83,9 @@ export class ConfigPainelComponent implements OnInit {
           data: markObj
         });
     }
+
+    //console.log("destinations ", destinations);
+    //console.log("this ", this.destinations);
     this.numOfVariables = destinations.length;
   }
 
@@ -623,20 +626,22 @@ export class ConfigPainelComponent implements OnInit {
   
   applyMutation(population: individual[]) 
   {
+    let newChromosome;
     let mutationApplied = false;
     //console.log("applyMutation");
     for (let j = 0; j < population.length; j++) 
     {
       let indiv = population[j];
+      newChromosome = indiv.chromosome.concat();;
       switch (this.mutationMode) 
       {
         case "Gene":
           //console.log("applyMutation Gene");
-          mutationApplied = this.tryMutationInGenes(indiv);
+          mutationApplied = this.tryMutationInGenes(newChromosome);
           break;
         case "Individuo":
-          console.log("applyMutation tryOneMutation");
-          mutationApplied = this.tryOneMutation(indiv.chromosome);
+          //console.log("applyMutation tryOneMutation");
+          mutationApplied = this.tryOneMutation(newChromosome);
           break;
         default:
           //console.log("applyMutation default");
@@ -646,22 +651,22 @@ export class ConfigPainelComponent implements OnInit {
 
       if (mutationApplied) 
       {
-        population.splice(j, 1, this.getIndividual(indiv.chromosome));
+        population.splice(j, 1, this.getIndividual(newChromosome));
       } 
     }
   }
 
-  tryMutationInGenes(indiv: individual): boolean
+  tryMutationInGenes(newChromosome: Variable[]): boolean
   {
     let mutationApplied = false;
-    for (let varIndex = 0; varIndex < indiv.chromosome.length; varIndex++) 
+    for (let varIndex = 0; varIndex < newChromosome.length; varIndex++) 
       {
         if (Math.random() < this.probMutacao) 
         {
           //console.log("mutation in individual " + j + " chromosome " + k);
           mutationApplied = true;
           //console.log("before mutation" + indiv.chromosome[k]);
-          this.swapMutation(varIndex, indiv.chromosome);
+          this.swapMutation(varIndex, newChromosome);
           //console.log("after mutation" + indiv.chromosome[k]);
         }
       }
