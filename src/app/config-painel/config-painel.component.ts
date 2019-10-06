@@ -837,7 +837,7 @@ export class ConfigPainelComponent implements OnInit {
 
   getTotalDistance(indiv: individual): number
   {
-    console.log(indiv.chromosome);
+    //console.log(indiv.chromosome);
     let totalDistance = 0;
     ///it does not includes the distance between the last and the firts city;
     for (let index = 0; index < indiv.chromosome.length - 1; index++) 
@@ -852,44 +852,8 @@ export class ConfigPainelComponent implements OnInit {
       indiv.chromosome[indiv.chromosome.length - 1].data.lat, indiv.chromosome[indiv.chromosome.length - 1].data.lng,
       indiv.chromosome[0].data.lat, indiv.chromosome[0].data.lng
     );
-    console.log("------------------------ totalDistance ", totalDistance);
+    //console.log("------------------------ totalDistance ", totalDistance);
     return totalDistance;
-  }
-
-  calcPP(intervalIndex: number, data: schedulingData): number
-  {
-    let pp = 0;
-    for (const iMachine in data.machines) {
-      /// se o intervalo está entre star e o final = startMa + numOfMaintenances - 1
-      const machineConfig = this.schedulingConfig.machines[iMachine];
-      const machine = data.machines[iMachine];
-      if(intervalIndex >= machine.maintenanceStart && 
-        intervalIndex <= this.getMaintenanceEnd(machine.maintenanceStart, machineConfig.numOfMaintenances))
-        {
-          pp += this.schedulingConfig.machines[iMachine].capacity;
-        }
-    }
-    return pp;
-  }
-
-  getMaintenanceEnd(maintenanceStart: number, numOfMaintenances: number)
-  {
-    return maintenanceStart  + numOfMaintenances  - 1;
-  }
-
-  calcPl(pt:number, pd: number, pp: number)
-  {
-    return pt - pd - pp;
-  }
-
-  functionToAnalise(x: number): number 
-  {
-    ///trab 02 funcion
-    //return - Math.abs(x * Math.sin(Math.sqrt(Math.abs(x)) ));
-
-    ///trab 03 funcion
-    ///to graph calculator - x * sin(x^4) + cos(x^2)
-    return x * Math.sin(Math.pow(x, 4)) + Math.cos(Math.pow(x, 2));
   }
 
   binArrayToDecimal(bits: number[]) 
@@ -939,7 +903,7 @@ export class ConfigPainelComponent implements OnInit {
     {
       console.log("NEGATIVE DISTANCE")
     }
-    console.log("distance ", distance);
+    //console.log("distance ", distance);
     return distance; 
   }
   
