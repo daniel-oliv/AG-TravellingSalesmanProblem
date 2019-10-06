@@ -42,6 +42,7 @@ export class ConfigPainelComponent implements OnInit {
   //numOfIntervals: number;
   numOfVariables: number;
   destinations: Variable[];
+  mapLineData: marker[];
 
   constructor() {}
 
@@ -272,7 +273,7 @@ export class ConfigPainelComponent implements OnInit {
     }
     */
     this.plotPerformanceGraph(this.generations);
-    
+    this.mapLineData = this.getBestIndLineData();
     //console.log(this.generations);
   }
 
@@ -867,7 +868,21 @@ export class ConfigPainelComponent implements OnInit {
     return distance; 
   }
   
+  getBestIndLineData()
+  {
+    let lineData: marker[] = [];
+    let bestChromosome = this.bestInd[0].chromosome.concat();
 
+    for (const location of bestChromosome) 
+    {
+      lineData.push(location.data);
+    }
+    /// for drawing the line between the firts and the last
+    lineData.push(bestChromosome[0].data)
+    //console.log("lineData", lineData);
+    return lineData;
+  }
+  
   /////////////////////
 }
 

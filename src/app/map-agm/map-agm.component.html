@@ -17,4 +17,11 @@
     
   </agm-marker>
 
+  <agm-polyline [editable]="true">
+    <agm-polyline-point *ngFor="let data of linesData" 
+        [latitude]="data.lat"
+        [longitude]="data.lng">
+    </agm-polyline-point>
+  </agm-polyline>
+
 </agm-map>

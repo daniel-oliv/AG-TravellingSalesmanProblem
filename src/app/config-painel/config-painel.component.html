@@ -73,7 +73,7 @@
 		<h2 class="rootTag container">Inserção de pontos</h2>
 
 		<!--<app-scatter></app-scatter>-->
-		<app-map-agm (newMarkers)="newSightseeing($event)"></app-map-agm>
+		<app-map-agm [linesData]="mapLineData" (newMarkers)="newSightseeing($event)"></app-map-agm>
 		<br><br>
 		<p-table [value]="destinations" class="table table-dark">
 				<ng-template pTemplate="header">
