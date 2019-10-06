@@ -1,5 +1,7 @@
 import { Component, OnInit, ɵConsole } from "@angular/core";
 
+const EQUATORIAL_RADIUS = 6378;
+
 @Component({
   selector: "app-config-painel",
   templateUrl: "./config-painel.component.html",
@@ -20,6 +22,7 @@ export class ConfigPainelComponent implements OnInit {
   numCurrentGeneration: number;
   generations: any[];
   couplesSelectionMode: string;
+  mutationMode: string;
   checkBoxSelectedItens: string[];
   numOfIndividualsInTourney: number;
   numOfElitismInd: number;
@@ -39,6 +42,7 @@ export class ConfigPainelComponent implements OnInit {
   schedulingConfig: schedulingConfig;
   numOfIntervals: number;
   numOfVariables: number;
+  destinations: Variable[];
 
   constructor() {}
 
@@ -48,8 +52,8 @@ export class ConfigPainelComponent implements OnInit {
 
     this.probCruzamento = 0.6;
     this.probMutacao = 0.01;
-    this.populationSize = 50;
-    this.maxNumOfGenerations = 70;
+    this.populationSize = 70;
+    this.maxNumOfGenerations = 50;
     this.bestInd = [];
     this.numOfBestToKeep = 5;
     this.numCurrentGeneration = 0;
@@ -58,13 +62,28 @@ export class ConfigPainelComponent implements OnInit {
     this.showGraph1 = 'block';
     this.showGraph2 = 'none';
     this.couplesSelectionMode = "Roleta";
+    this.mutationMode = "Gene";
     this.checkBoxSelectedItens = ["elitism"];
     this.numOfIndividualsInTourney = 4;
     this.numOfElitismInd = 2;
     this.numOfIntervals = 4;
     this.initSchedulingConfig();
-    this.numOfVariables = 7;
 
+  }
+
+  newSightseeing(destinations: marker[])
+  {
+    console.log("newSightseeing");
+    this.destinations = [];
+    for (const markObj of destinations) 
+    {
+      this.destinations.push(
+        {
+          id: markObj.label,
+          data: markObj
+        });
+    }
+    this.numOfVariables = destinations.length;
   }
 
   initSchedulingConfig()
@@ -281,12 +300,14 @@ export class ConfigPainelComponent implements OnInit {
       currentGeneration = nextGeneration;
     }///while
 
+    /*
     for (let i = 0; i < this.generations.length; i++) 
     {
       setTimeout(() => {
         //this.drawFunction(this.generationsDataSets.slice(i, i + 1));
       }, i * 2);
     }
+    */
     this.plotPerformanceGraph(this.generations);
     
     //console.log(this.generations);
@@ -465,27 +486,39 @@ export class ConfigPainelComponent implements OnInit {
     }
   }
 
-  crossIndividuals(couple: individual[]): individual[] {
-    //console.log("crossIndividuals couple: ");
-    //couple.forEach((indiv)=>console.log(indiv.chromosome));
+  crossIndividuals(couple: individual[]): individual[] 
+  {
+    //console.log("crossIndividuals couple: ", couple);
+    let newIndividuals: individual[] = this.applyPMXCrossover(couple);
+    //console.log("crossIndividuals ind2: " + ind2.chromosome);
+
+    return newIndividuals;
+  }
+
+  //partially matched crossover
+  applyPMXCrossover(couple: individual[]): individual[]
+  {
     let newIndividuals: individual[] = [];
     let newChromosome: Variable[] = [];
+    let indexesToCross: number[] = [];
 
     ///Math.floor(Math.random()*(this.resolution - 1)) 0 to 8 - +=1 1 to 9
-    let indexToCross: number =
-      Math.floor(Math.random() * (this.numOfVariables - 1)) + 1; /// 1 to 9 (pos entre os bits)
-    //console.log("crossIndividuals indexToCross: " + indexToCross);
+    indexesToCross.push( this.getRandomCrossPosition() );
+    indexesToCross.push( this.getRandomCrossPosition() );
+    indexesToCross = this.getAscendingArray(indexesToCross);
+    //console.log("applyPMXCrossover indexesToCross: ", indexesToCross);
 
-    newChromosome = couple[0].chromosome
-      .slice(0, indexToCross)
-      .concat(couple[1].chromosome.slice(indexToCross, this.numOfVariables));
+    let blockFrom1 = couple[0].chromosome.slice(indexesToCross[0], indexesToCross[1]);
+    let blockFrom2 = couple[1].chromosome.slice(indexesToCross[0], indexesToCross[1]);
+
+    newChromosome = this.mountPMXCromosome(indexesToCross[0], indexesToCross[1], 
+      couple[0].chromosome, blockFrom2, blockFrom1);
     let ind1: individual = this.getIndividual(newChromosome);
     newIndividuals.push(ind1);
     //console.log("crossIndividuals ind1: " + ind1.chromosome);
 
-    newChromosome = couple[1].chromosome
-      .slice(0, indexToCross)
-      .concat(couple[0].chromosome.slice(indexToCross, this.numOfVariables));
+    newChromosome = this.mountPMXCromosome(indexesToCross[0], indexesToCross[1], 
+      couple[1].chromosome, blockFrom1, blockFrom2);
     let ind2: individual = this.getIndividual(newChromosome);
     newIndividuals.push(ind2);
     //console.log("crossIndividuals ind2: " + ind2.chromosome);
@@ -493,6 +526,101 @@ export class ConfigPainelComponent implements OnInit {
     return newIndividuals;
   }
 
+  getRandomCrossPosition(): number
+  {
+    return Math.floor(Math.random() * (this.numOfVariables - 1)) + 1;/// 1 to 9 (pos entre os bits)
+  }
+
+  getAscendingArray(array: number[]): number[]
+  {
+    let ordered: number[]= [];
+    ordered.push(array[0]);
+    ///starting at 1, since we had already added 0th
+    for (let i = 1; i < array.length; i++) 
+    {
+      let insertedIndividual = false;
+      for (let j = 0; j < ordered.length; j++) 
+      {
+        ///if the fitness is less than some already inserted individual's fitness, insert it before
+        if (array[i] < ordered[j]) 
+        {
+          ordered.splice(j, 0, array[i]);
+          insertedIndividual = true;
+          break;
+        }
+      }
+      /// if it was not inserted, push it at the end, since it is the biggest value
+      if (insertedIndividual === false) 
+      {
+        ordered.push(array[i]);
+      }
+    }
+    /*console.log("getAscendingFitnessPopulation");
+    console.log("first");
+    console.log(ordered[0]);
+    console.log("last");
+    console.log(ordered[ordered.length - 1]);*/
+    return ordered;
+  }
+
+  /// the indexToCross1 must be less than indexToCross2
+  mountPMXCromosome(indexToCross1: number, indexToCross2: number, 
+    baseChromosome: Variable[], newFixedBlock: Variable[], oldblock: Variable[]): Variable[]
+  {
+    //console.log("baseChromosome", baseChromosome);
+
+    //let newChromosome = baseChromosome.concat();
+    //newChromosome.splice(indexToCross1, indexToCross2 - indexToCross1, ...newFixedBlock);
+    
+    let newChromosome = [];
+
+    for (let index = 0; index < baseChromosome.length; index++) 
+    {
+      /// it is not inside the new fixed part - indexToCross2 is a end not included
+      if(index < indexToCross1 || index > indexToCross2 -1)
+      {
+        newChromosome.push( this.getNoRepeatedGene(baseChromosome[index], newFixedBlock, oldblock) );
+      }
+      else
+      {
+        newChromosome.push(newFixedBlock[index - indexToCross1]);
+      }
+    }
+
+    // console.log("oldblock", oldblock);
+    // console.log("newFixedBlock", newFixedBlock);
+    // console.log("newChromosome", newChromosome);
+    // console.log("baseChromosome", baseChromosome);
+    return newChromosome;
+  }
+
+  getNoRepeatedGene(gene: Variable, fixedBlock: Variable[], replacedBlock: Variable[]): Variable
+  {
+    //let getIndexOfLocation = 
+    //if( this.hasLocationID(fixedBlock, gene) )
+    if( fixedBlock.includes(gene) )    
+    {
+      //console.log("fixedBlock.indexOf(gene)", fixedBlock.indexOf(gene));
+      return this.getNoRepeatedGene(replacedBlock[fixedBlock.indexOf(gene)], fixedBlock, replacedBlock);
+    }
+    return gene;
+  }
+
+  
+  hasLocationID(chromosomeBlock: Variable[], geneToTest: Variable): boolean
+  {
+      for (const iGene of chromosomeBlock)
+      {
+        if(iGene.id == geneToTest.id)
+        {
+          console.log("hasLocationID true");
+          return true;
+        }
+      }
+
+      return false;
+  }
+  
   applyMutation(population: individual[]) 
   {
     let mutationApplied = false;
@@ -500,37 +628,86 @@ export class ConfigPainelComponent implements OnInit {
     for (let j = 0; j < population.length; j++) 
     {
       let indiv = population[j];
-      mutationApplied = false;
-      for (let varIndex = 0; varIndex < indiv.chromosome.length; varIndex++) 
+      switch (this.mutationMode) 
+      {
+        case "Gene":
+          //console.log("applyMutation Gene");
+          mutationApplied = this.tryMutationInGenes(indiv);
+          break;
+        case "Individuo":
+          console.log("applyMutation tryOneMutation");
+          mutationApplied = this.tryOneMutation(indiv.chromosome);
+          break;
+        default:
+          //console.log("applyMutation default");
+          return null;
+          break;
+      }
+
+      if (mutationApplied) 
+      {
+        population.splice(j, 1, this.getIndividual(indiv.chromosome));
+      } 
+    }
+  }
+
+  tryMutationInGenes(indiv: individual): boolean
+  {
+    let mutationApplied = false;
+    for (let varIndex = 0; varIndex < indiv.chromosome.length; varIndex++) 
       {
         if (Math.random() < this.probMutacao) 
         {
           //console.log("mutation in individual " + j + " chromosome " + k);
           mutationApplied = true;
           //console.log("before mutation" + indiv.chromosome[k]);
-          ///change data that relies on variable, as machineStart
-          this.getRamdomVariable(varIndex);
+          this.swapMutation(varIndex, indiv.chromosome);
           //console.log("after mutation" + indiv.chromosome[k]);
         }
       }
-      if (mutationApplied) 
-      {
-        population.splice(j, 1, this.getIndividual(indiv.chromosome));
-      }
-    }
+      return mutationApplied;
   }
 
-  ///new chromosome -> select ramdom values to all variables
-  getRandomVariables(): Variable[]
+  tryOneMutation(chromosome: Variable[]): boolean
   {
-    //console.log("getRandomVariables");
-    let variables: Variable[] = [];
-    for (let index = 0; index < this.numOfVariables; index++) {
-      variables.push(this.getRamdomVariable(index));
+    if (Math.random() < this.probMutacao)
+    {
+      let index1 = Math.floor(Math.random() * chromosome.length);
+      this.swapMutation(index1, chromosome);
+      return true;
     }
-    //console.log("getRandomVariables ", variables);
-    return variables;
+    return false;
   }
+
+  swapMutation(indexToSwap: number, chromosome: Variable[])
+  {
+    let index2 = Math.floor(Math.random() * chromosome.length);
+    let gene1 = chromosome[indexToSwap];
+    let gene2 = chromosome[index2];
+    chromosome[indexToSwap] = gene2;
+    chromosome[index2] = gene1;
+  }
+
+  getRandomTour() : Variable[]
+  {
+    let chromosome: Variable[] = [];
+    //console.time();    
+    let remainderDests = this.destinations.concat();
+    //console.timeEnd();
+    let ramdomNum;
+    while(remainderDests.length > 0)
+    {
+      ramdomNum = Math.floor(Math.random() * remainderDests.length);
+      //console.log("ramdomNum ", ramdomNum);
+      let selectedDest = remainderDests[ramdomNum];
+      //console.log("selectedDest", selectedDest);
+      chromosome.push(selectedDest);
+
+      remainderDests.splice(ramdomNum, 1);
+    }
+    return chromosome;
+  }
+  
 
   selectIndividual(ci: number[]): number {
     //console.log(ci);
@@ -544,44 +721,23 @@ export class ConfigPainelComponent implements OnInit {
     return selectedIndex;
   }
 
-  selectInitialPopulation(): individual[] {
+  selectInitialPopulation(): individual[] 
+  {
     let currentGeneration: individual[] = [];
+
     for (let i = 0; i < this.populationSize; i++) 
     {
       //console.log("selectInitialPopulation: " + i);
-      
-      currentGeneration.push(  this.getIndividual(this.getRandomVariables())  );
+      currentGeneration.push(  this.getIndividual(this.getRandomTour())  );
     }
-
-    /*
-    let bits = [1,1,1,1,1,1,1,1,1,1]
-    this.binArrayToDecimal(bits);
-    this.wholeToReal( this.binArrayToDecimal(bits));
-
-    for(let i = 0; i < this.populationSize; i++)
-    {
-      this.wholeToReal( this.binArrayToDecimal(currentGeneration[i]));
-    }
-    */
     return currentGeneration;
   }
 
   getIndividual(chromosome: Variable[]): individual {
     //console.log("getIndividual");
     let indiv: individual = {
-      chromosome: this.getRandomVariables(),
-      data: {
-        pp: [],
-        pl: [],
-        machines: []
-      }
+      chromosome: chromosome,
     };
-
-    /// calculate variable outputs
-    for (const variable of indiv.chromosome) {
-      let machine: Machine = {maintenanceStart: variable.value}
-      indiv.data.machines.push( machine );
-    }
 
     indiv.fitness = this.calcFitness(indiv);
 
@@ -639,7 +795,8 @@ export class ConfigPainelComponent implements OnInit {
     this.bestInd.forEach(element => {
       let areAllVarEqual = true;
       for (const iVar in element.chromosome) {
-        if(element.chromosome[iVar].value != indiv.chromosome[iVar].value)
+        ///////
+        if(element.chromosome[iVar].id != indiv.chromosome[iVar].id)
         {
           areAllVarEqual = false;
           break;
@@ -654,26 +811,6 @@ export class ConfigPainelComponent implements OnInit {
     return containsInd;
   }
 
-  getRamdomVariable(indexVar: number): Variable
-  {
-    //console.log("getRamdomVariable indexVar", indexVar);
-    let variable: Variable = {
-      id: (indexVar + 1).toString()    
-    }
-    /// it could be done inside a function if every var is a different thing
-    let  machine = this.schedulingConfig.machines[indexVar];
-    /// se numOfMaintenances (número de intervalos consecutivos de manutenção) é:
-    /// numOfMaintenances=2 -> 4-(2-1)=3 
-    /// numOfMaintenances=1 -> 4-(1-1)=4 
-    let numOfStarts = 4 - (machine.numOfMaintenances - 1);
-    
-    /// se numOfMaintenances=2, numOfStarts = 3, e retorna um número entre 0 e 2 
-    /// que representa uma possível representação binária - 00, 01, 10 
-    variable.value = this.getRamdomInt(numOfStarts);
-    //console.log("getRamdomVariable variable", variable);
-    return variable;
-  }
-
   getRamdomInt(maxExclusive: number)
   {
     return Math.floor(Math.random() * maxExclusive);
@@ -682,19 +819,36 @@ export class ConfigPainelComponent implements OnInit {
   calcFitness(indiv: individual): number 
   {
     let fitness = 0;
-    this.calcPPs(indiv);
-    this.calcPLs(indiv);
-
-    fitness = this.minArray(indiv.data.pl);
-    if(fitness < 0) fitness = 0;
-
+    indiv.totalDistance = this.getTotalDistance(indiv);
+    fitness = EQUATORIAL_RADIUS - indiv.totalDistance;
+    //console.log("fitness", fitness)
+    if(fitness < 0) 
+    {
+      console.log("SO BIG DISTANCE! MORE THAN EARTH RADIUS!");
+      fitness = 0;
+    }
     return fitness;
   }
 
-  calcPPs(indiv: individual){
-    for (let index = 0; index < this.numOfIntervals; index++) {
-      indiv.data.pp[index] = this.calcPP(index, indiv.data);
+  getTotalDistance(indiv: individual): number
+  {
+    console.log(indiv.chromosome);
+    let totalDistance = 0;
+    ///it does not includes the distance between the last and the firts city;
+    for (let index = 0; index < indiv.chromosome.length - 1; index++) 
+    {
+      totalDistance += this.asTheCrowFlies(
+        indiv.chromosome[index].data.lat, indiv.chromosome[index].data.lng,
+        indiv.chromosome[index+1].data.lat, indiv.chromosome[index+1].data.lng
+      );
     }
+    ///for the way between the last and the firts location
+    totalDistance += this.asTheCrowFlies(
+      indiv.chromosome[indiv.chromosome.length - 1].data.lat, indiv.chromosome[indiv.chromosome.length - 1].data.lng,
+      indiv.chromosome[0].data.lat, indiv.chromosome[0].data.lng
+    );
+    console.log("------------------------ totalDistance ", totalDistance);
+    return totalDistance;
   }
 
   calcPP(intervalIndex: number, data: schedulingData): number
@@ -716,12 +870,6 @@ export class ConfigPainelComponent implements OnInit {
   getMaintenanceEnd(maintenanceStart: number, numOfMaintenances: number)
   {
     return maintenanceStart  + numOfMaintenances  - 1;
-  }
-
-  calcPLs(indiv: individual){
-    for (let index = 0; index < this.numOfIntervals; index++) {
-      indiv.data.pl[index] = this.calcPl(this.schedulingConfig.pt, this.schedulingConfig.pd[index], indiv.data.pp[index]);      
-    }
   }
 
   calcPl(pt:number, pd: number, pp: number)
@@ -757,15 +905,49 @@ export class ConfigPainelComponent implements OnInit {
     averageFit /= generation.length;
     return averageFit;
   }
+
+  /// distância em linha reta em km
+  asTheCrowFlies(ltDeg1: number, lgDeg1: number, latDeg2: number, lgDeg2: number) 
+  {
+    let distance = 0;
+    const RADIANS: number = 180 / 3.14159265;
+    const METRES_IN_MILE: number = 1609.34;
+    
+    if (ltDeg1 == latDeg2 && lgDeg1 == lgDeg2) 
+    {
+      distance = 0;
+    
+    } 
+    else 
+    {
+      // Calculating Distance between Points
+      let lt1 = ltDeg1 / RADIANS;
+      let lg1 = lgDeg1 / RADIANS;
+      let lt2 = latDeg2 / RADIANS;
+      let lg2 = lgDeg2 / RADIANS;
+    
+      // radius of earth in miles (3,958.8) * metres in a mile * position on surface of sphere...
+      distance = (3958.8 / 1000 * METRES_IN_MILE) * Math.acos(Math.sin(lt1) * Math.sin(lt2) + Math.cos(lt1) * Math.cos(lt2) * Math.cos(lg2 - lg1));
+    }
+    //console.log("distance", distance);
+    if(distance < 0)
+    {
+      console.log("NEGATIVE DISTANCE")
+    }
+    console.log("distance ", distance);
+    return distance; 
+  }
   
 
   /////////////////////
 }
 
 interface individual {
+  /// indicates the order to visit the cities, that is, the tour
   chromosome?: Variable[];
 
-  data: schedulingData;
+  ///totalDistance summing the distances between all places in the chromosome, including between the last and the first
+  totalDistance?: number;
 
   ///indicates how much the the individual is good (generally is f(x)+c)
   fitness?: number;
@@ -776,10 +958,9 @@ interface individual {
 }
 
 interface Variable{
-  ///match with unitId
+  ///match with mark label
   id: string;
-  //binary?: string;
-  value?: number;
+  data?: marker;
 }
 
 interface schedulingData{
@@ -826,4 +1007,11 @@ interface Machine{
   maintenanceStart?: number;
 
   binary?: string;
+}
+ 
+declare interface marker {
+	lat: number;
+	lng: number;
+	label?: string;
+	draggable: boolean;
 }

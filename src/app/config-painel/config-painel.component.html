@@ -1,4 +1,6 @@
-<h1 class="rootTag container">Scheduling Mantenaince Example</h1>
+<div style="display: flex; align-items: center; flex-direction: column;">
+<h1>Travelling Salesman Problem</h1>
+</div>
 
 <button class="btn btn-primary" (click)="optimize()">Encontrar máximo/mínimo</button>
 
@@ -55,7 +57,14 @@
 				<p-slider class="slider" [(ngModel)]="numOfElitismInd" 
 				[step]="2" [min]="0" [max]="populationSize" 
 				[animate]="true" ></p-slider>
-
+				<br>
+				<br>
+				<h5>Modo de mutação</h5>
+				
+				<p-radioButton label="Individuo" name="mutationMode" value="Individuo" [(ngModel)]="mutationMode">Uma por indivíduo</p-radioButton>
+				<br><br>
+				<p-radioButton label="Gene" name="mutationMode" value="Gene" [(ngModel)]="mutationMode">Para cada gene</p-radioButton>
+				
 				<br><br><br>            
 			</div>      
 		</div>
@@ -64,22 +73,22 @@
 		<h2 class="rootTag container">Inserção de pontos</h2>
 
 		<!--<app-scatter></app-scatter>-->
-		<app-map-agm></app-map-agm>
-		
-		<p-table [value]="schedulingConfig.machines" class="table table-dark">
+		<app-map-agm (newMarkers)="newSightseeing($event)"></app-map-agm>
+		<br><br>
+		<p-table [value]="destinations" class="table table-dark">
 				<ng-template pTemplate="header">
 					<tr>
 						<!--<th *ngFor="let machine of schedulingConfig.machines">Unidade {{machine.unitID}}</th>-->
-						<th>Unidade</th>
-						<th>Capacidade (MW)</th>
-						<th>Número de intervalos interruptos de manutenção</th>
+						<th>ID</th>
+						<th>Latitude</th>
+						<th>Longintude</th>
 					</tr>
 				</ng-template>
-				<ng-template pTemplate="body" let-unit>
+				<ng-template pTemplate="body" let-point>
 					<tr>
-						<td>{{unit.unitID}}</td>
-						<td>{{unit.capacity}}</td>
-						<td>{{unit.numOfMaintenances}}</td>
+						<td>{{point.data.label}}</td>
+						<td>{{point.data.lat}}</td>
+						<td>{{point.data.lng}}</td>
 					</tr>
 				</ng-template>
 			</p-table>
@@ -101,16 +110,16 @@
 					<ng-template pTemplate="header">
 						<tr>
 							<!--<th *ngFor="let machine of schedulingConfig.machines">Unidade {{machine.unitID}}</th>-->
-							<th>Manutenções</th>
-							<th>Potências líquidas</th>
+							<th>Tour</th>
+							<th>Distância total</th>
 							<th>fitness</th>
 							<th>Generation</th>
 						</tr>
 					</ng-template>
 					<ng-template pTemplate="body" let-indiv>
 						<tr>
-							<td><span *ngFor="let machine of indiv.data.machines"> {{machine.maintenanceStart}},  </span></td>
-							<td><span *ngFor="let potLiq of indiv.data.pl"> {{potLiq}},  </span></td>
+							<td><span *ngFor="let place of indiv.chromosome"> {{place.id}},  </span></td>
+							<td>{{indiv.totalDistance}}</td>
 							<td>{{indiv.fitness}}</td>
 							<td>{{indiv.generation}}</td>
 						</tr>

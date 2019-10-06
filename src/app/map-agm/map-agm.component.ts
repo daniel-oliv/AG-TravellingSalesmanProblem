@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 import { MouseEvent } from '@agm/core';
 
@@ -9,10 +9,16 @@ import { MouseEvent } from '@agm/core';
 })
 export class MapAgmComponent implements OnInit {
 
+  @Output() newMarkers = new EventEmitter<any>();
+
   constructor() { }
 
   ngOnInit() {
+
+    this.newMarkers.emit(this.markers);
   }
+
+  nextLabel  = 5;
 
   zoom: number = 8;
   
@@ -28,41 +34,52 @@ export class MapAgmComponent implements OnInit {
     this.markers.push({
       lat: $event.coords.lat,
       lng: $event.coords.lng,
+      label: this.nextLabel.toString(),
       draggable: true
     });
+    this.nextLabel++;
+
+    this.newMarkers.emit(this.markers);
   }
   
   markerDragEnd(m: marker, $event: MouseEvent) {
     m.lat = $event.coords.lat;
     m.lng = $event.coords.lng;
-    console.log('dragEnd', m, $event);
-    console.log('new ', $event.coords.lat);
+    //console.log('dragEnd', m, $event);
+    //console.log('new ', $event.coords.lat);
+    this.newMarkers.emit(this.markers);
   }
   
   markers: marker[] = [
 	  {
 		  lat: -18.5873,
 		  lng: -46.5147,
-		  label: 'A',
+		  label: '1',
 		  draggable: true
 	  },
 	  {
-		  lat: -18.5873,
-		  lng: -47.5147,
-		  label: 'B',
+		  lat: -18.9128,
+		  lng: -48.2755,
+		  label: '3',
 		  draggable: false
 	  },
 	  {
-		  lat: 51.723858,
-		  lng: 7.895982,
-		  label: 'C',
+		  lat: -18.7307,
+		  lng: -47.4917,
+		  label: '2',
+		  draggable: true
+    },
+    {
+		  lat: -19.5906,
+		  lng: -46.9442,
+		  label: '4',
 		  draggable: true
 	  }
   ]
 
 }
 
-interface marker {
+declare interface marker {
 	lat: number;
 	lng: number;
 	label?: string;
